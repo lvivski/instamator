@@ -1,47 +1,21 @@
 import * as puppeteer from 'puppeteer';
 
-export interface IgLoginOptions {
+export interface LoginOptions {
   username: string;
   password: string;
 }
 
 type CallbackFn<T> = (page: puppeteer.Page) => T;
 
-export default class IgBrowser {
-  private browserPromise: Promise<puppeteer.Browser>;
+export default class Browser {
+  private _browser: puppeteer.Browser;
   private baseUrl: string;
 
   constructor() {
-    this.browserPromise = puppeteer.launch({
-      args: ['--lang=en-US,en'],
-      headless: true,
-    });
     this.baseUrl = 'https://instagram.com';
   }
 
-  public async get<T>(url: string, fn: CallbackFn<T>): Promise<T> {
-    let result: T;
-    let page: puppeteer.Page;
-    try {
-      const browser = await this.browserPromise;
-      page = await browser.newPage();
-
-      await page.goto(this.baseUrl + url, { waitUntil: 'load' });
-
-      result = await fn(page);
-      await page.close();
-    } catch (e) {
-      if (page) {
-        await page.close();
-      }
-
-      throw e;
-    }
-
-    return result;
-  }
-
-  public login({ username, password }: IgLoginOptions): Promise<void> {
+  public login({ username, password }: LoginOptions): Promise<void> {
     return this.get<void>('/accounts/login', async (page: puppeteer.Page) => {
       await page.waitForSelector('input[name="username"]');
 
@@ -68,4 +42,35 @@ export default class IgBrowser {
       }, element)));
     });
   }
+
+  private async get<T>(url: string, fn: CallbackFn<T>): Promise<T> {
+    let result: T;
+    let page: puppeteer.Page;
+    try {
+      const browser = await this.browser();
+      page = await browser.newPage();
+
+      await page.goto(this.baseUrl + url, { waitUntil: 'load' });
+
+      result = await fn(page);
+      await page.close();
+    } catch (e) {
+      if (page) {
+        await page.close();
+      }
+
+      throw e;
+    }
+
+    return result;
+  }
+
+  private async browser(): Promise<puppeteer.Browser> {
+    if (this._browser) return this._browser
+    return this._browser = await puppeteer.launch({
+      args: ['--lang=en-US,en'],
+      headless: true,
+    });
+  }
+
 }

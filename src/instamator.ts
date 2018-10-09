@@ -1,13 +1,13 @@
-import IgBrowser, { IgLoginOptions } from './browser';
+import Browser, { LoginOptions } from './browser';
 
-export default class IgBot {
-  private browser: IgBrowser;
+export default class Instamator {
+  private browser: Browser;
 
   constructor() {
-    this.browser = new IgBrowser();
+    this.browser = new Browser();
   }
 
-  public async login({ username, password }: IgLoginOptions): Promise<void> {
+  public async login({ username, password }: LoginOptions): Promise<void> {
     return this.browser.login({ username, password });
   }
 
