@@ -8,7 +8,6 @@ import * as selectors from './selectors';
 
 import { query } from './query';
 
-
 export interface ILoginOptions {
   username: string;
   password: string;
@@ -99,37 +98,37 @@ export default class Client implements IClient {
   private getMedia(endpoint: string, totalHandle: string, mainHandle: string, amount: number, mediaTypes: MediaType[]) {
     return this.get<object>(endpoint, async (page: Page) => {
       const total = await page.evaluate(totalHandle);
-      const links = await page.evaluate(async (mainElement: HTMLElement, limit: number, media: MediaType[]) => {
-        let count = 0;
-        const set = new Set<string>();
-        while (count < limit) {
-          Array.from(mainElement.querySelectorAll('a'))
-            .forEach((a: HTMLAnchorElement) => {
-              if (media.includes(a.text as MediaType)) {
-                set.add(a.href);
-              }
-            });
-
-          if (set.size > count) {
-            count = set.size;
-          } else {
-            break;
-          }
-
-          window.scrollTo(0, document.body.scrollHeight);
-          await new Promise((resolve) => {
-            setTimeout(resolve, 1500);
-          });
-        }
-
-        return Array.from(set);
-      }, mainHandle, Math.min(amount, total), mediaTypes);
+      const links = await page.evaluate(this.mediaEvaluator, mainHandle, Math.min(amount, total), mediaTypes);
 
       return {
         links,
         total,
        };
     });
+  }
+
+  private async mediaEvaluator(mainElement: HTMLElement, limit: number, media: MediaType[]) {
+    let count = 0;
+    const set = new Set<string>();
+    while (count < limit) {
+      Array.from(mainElement.querySelectorAll('a'))
+        .forEach((a: HTMLAnchorElement) => {
+          if (media.includes(a.text as MediaType)) {
+            set.add(a.href);
+          }
+        });
+
+      if (set.size > count) {
+        count = set.size;
+      } else {
+        break;
+      }
+
+      window.scrollTo(0, document.body.scrollHeight);
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+    }
+
+    return Array.from(set);
   }
 
   private async get<T>(path: string, fn?: CallbackFn<T>) {
