@@ -11,10 +11,6 @@ export default class Instamator {
     return this.browser.login({ username, password });
   }
 
-  public getUserInfo(username: string): Promise<object> {
-    return this.browser.getUserInfo(username);
-  }
-
   public stop(): Promise<void> {
     return this.browser.close();
   }

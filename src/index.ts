@@ -1,22 +1,29 @@
 import * as dotenv from 'dotenv';
 import Client from './client';
-import Instamator from './instamator';
 
 dotenv.config();
 async function start() {
   try {
     const client = new Client();
-    const instamator = new Instamator(client);
 
-    await instamator.login({
+    await client.login({
       password: process.env.PASSWORD,
       username: process.env.USERNAME,
     });
 
-    const data = await instamator.getUserInfo('lvivski');
-    console.log(data);
+    const tagMedia = await client.getTagMedia('macro');
+    console.log(tagMedia);
 
-    await instamator.stop();
+    const locationMedia = await client.getLocationMedia('213131048');
+    console.log(locationMedia);
+
+    const userMedia = await client.getUserMedia('o_nedlinska');
+    console.log(userMedia);
+
+    const userData = await client.getUserInfo('o_nedlinska');
+    console.log(userData);
+
+    await client.close();
   } catch (e) {
     throw e;
   }
