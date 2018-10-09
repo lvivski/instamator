@@ -1,9 +1,9 @@
-import { IBrowser, ILoginOptions } from './browser';
+import { IClient, ILoginOptions } from './client';
 
 export default class Instamator {
-  private browser: IBrowser;
+  private browser: IClient;
 
-  constructor(browser: IBrowser) {
+  constructor(browser: IClient) {
     this.browser = browser;
   }
 

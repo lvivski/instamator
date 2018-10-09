@@ -1,12 +1,12 @@
 import * as dotenv from 'dotenv';
-import Browser from './browser';
+import Client from './client';
 import Instamator from './instamator';
 
 dotenv.config();
 async function start() {
   try {
-    const browser = new Browser();
-    const instamator = new Instamator(browser);
+    const client = new Client();
+    const instamator = new Instamator(client);
 
     await instamator.login({
       password: process.env.PASSWORD,
