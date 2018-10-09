@@ -167,13 +167,11 @@ export default class Client implements IClient {
     }
     const browser = await this.browser();
     const page = await browser.newPage();
-
     const ua = await browser.userAgent();
-    page.setUserAgent(ua.replace('Headless', ''));
-    await page.setViewport({
-      height: 768,
-      width: 1024,
-    });
+
+    await page.setUserAgent(ua.replace('Headless', ''));
+    await page.setViewport({ width: 1024, height: 768 });
+
     return this._page = page;
   }
 
