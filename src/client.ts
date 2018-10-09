@@ -157,7 +157,7 @@ export default class Client implements IClient {
 
     return this._browser = await launch({
       args: ['--lang=en-US,en'],
-      headless: false,
+      headless: true,
     });
   }
 
