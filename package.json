@@ -1,0 +1,20 @@
+{
+  "name": "igbot",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node dist/index.js",
+    "build": "tsc"
+  },
+  "author": "Yehor Lvivski <yehor@lvivski.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@types/dotenv": "^4.0.3",
+    "@types/puppeteer": "^1.9.0",
+    "dotenv": "^6.0.0",
+    "nodemon": "^1.18.4",
+    "puppeteer": "^1.9.0",
+    "tslint": "^5.11.0",
+    "typescript": "^3.1.1"
+  }
+}
