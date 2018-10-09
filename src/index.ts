@@ -1,14 +1,25 @@
 import * as dotenv from 'dotenv';
+import Browser from './browser';
 import Instamator from './instamator';
 
 dotenv.config();
+async function start() {
+  try {
+    const browser = new Browser();
+    const instamator = new Instamator(browser);
 
-const instamator = new Instamator();
+    await instamator.login({
+      password: process.env.PASSWORD,
+      username: process.env.USERNAME,
+    });
 
-instamator.login({
-  password: process.env.PASSWORD,
-  username: process.env.USERNAME,
-})
-.then(() => instamator.getUserInfo('lvivski'))
-.then((data) => console.log(data))
-.catch((error) => console.log("error", error));
+    const data = await instamator.getUserInfo('lvivski');
+    console.log(data);
+
+    await instamator.stop();
+  } catch (e) {
+    throw e;
+  }
+}
+
+start();

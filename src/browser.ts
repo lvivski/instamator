@@ -1,64 +1,66 @@
 import * as puppeteer from 'puppeteer';
 
-export interface LoginOptions {
+export interface ILoginOptions {
   username: string;
   password: string;
 }
 
+export interface IBrowser {
+  login({ username, password }: ILoginOptions): Promise<void>;
+  getUserInfo(username: string): Promise<object>;
+  close(): Promise<void>;
+}
+
 type CallbackFn<T> = (page: puppeteer.Page) => T;
 
-export default class Browser {
+export default class Browser implements IBrowser {
   private _browser: puppeteer.Browser;
-  private baseUrl: string;
+  private _page: puppeteer.Page;
 
-  constructor() {
-    this.baseUrl = 'https://instagram.com';
-  }
-
-  public login({ username, password }: LoginOptions): Promise<void> {
+  public login({ username, password }: ILoginOptions) {
     return this.get<void>('/accounts/login', async (page: puppeteer.Page) => {
       await page.waitForSelector('input[name="username"]');
 
       const usernameInput = await page.$('input[name="username"]');
-      const passwordInput = await page.$('input[name="password"]');
+      await usernameInput.type(username, { delay: 25 });
 
-      await usernameInput.type(username, { delay: 50 });
+      const passwordInput = await page.$('input[name="password"]');
       await passwordInput.type(password, { delay: 50 });
 
       const logInButton = await page.$x('//button[contains(text(), "Log in")]');
-
       await logInButton[0].click();
 
-      await page.waitFor(2000);
+      await page.waitFor(500);
     });
   }
 
-  public getUserInfo(username: string): Promise<object> {
+  public getUserInfo(username: string) {
     return this.get<object>(`/${username}`, async (page: puppeteer.Page) => {
-      await page.waitFor(2000);
+      await page.waitFor(500);
+
       const data = await page.$x('//li/span|//li/a');
-      return Promise.all(data.map((element) => page.evaluate((e: HTMLElement) => {
-        return e.textContent;
-      }, element)));
+
+      return Promise.all(data.map(async (element: puppeteer.ElementHandle) => {
+        const text = await element.getProperty('textContent');
+        return text.jsonValue();
+      }));
     });
   }
 
-  private async get<T>(url: string, fn: CallbackFn<T>): Promise<T> {
-    let result: T;
-    let page: puppeteer.Page;
-    try {
-      const browser = await this.browser();
-      page = await browser.newPage();
+  public async close() {
+    const browser = await this.browser();
+    return browser.close();
+  }
 
-      await page.goto(this.baseUrl + url, { waitUntil: 'load' });
+  private async get<T>(path: string, fn: CallbackFn<T>) {
+    let result: T;
+    const page = await this.page();
+
+    try {
+      await page.goto(`https://instagram.com${path}` , { waitUntil: 'load' });
 
       result = await fn(page);
-      await page.close();
     } catch (e) {
-      if (page) {
-        await page.close();
-      }
-
       throw e;
     }
 
@@ -66,11 +68,26 @@ export default class Browser {
   }
 
   private async browser(): Promise<puppeteer.Browser> {
-    if (this._browser) return this._browser
+    if (this._browser) {
+      return this._browser;
+    }
+
     return this._browser = await puppeteer.launch({
       args: ['--lang=en-US,en'],
-      headless: true,
+      headless: false,
     });
+  }
+
+  private async page(): Promise<puppeteer.Page> {
+    if (this._page) {
+      return this._page;
+    }
+    const browser = await this.browser();
+    const page = await browser.newPage();
+    const ua = await browser.userAgent();
+    page.setUserAgent(ua.replace('Headless', ''));
+
+    return this._page = page;
   }
 
 }

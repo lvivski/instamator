@@ -1,17 +1,21 @@
-import Browser, { LoginOptions } from './browser';
+import { IBrowser, ILoginOptions } from './browser';
 
 export default class Instamator {
-  private browser: Browser;
+  private browser: IBrowser;
 
-  constructor() {
-    this.browser = new Browser();
+  constructor(browser: IBrowser) {
+    this.browser = browser;
   }
 
-  public async login({ username, password }: LoginOptions): Promise<void> {
+  public login({ username, password }: ILoginOptions): Promise<void> {
     return this.browser.login({ username, password });
   }
 
-  public async getUserInfo(username: string): Promise<object> {
+  public getUserInfo(username: string): Promise<object> {
     return this.browser.getUserInfo(username);
+  }
+
+  public stop(): Promise<void> {
+    return this.browser.close();
   }
 }
